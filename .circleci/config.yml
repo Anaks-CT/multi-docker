@@ -1,0 +1,58 @@
+version: 2.1
+executors:
+  docker-executor:
+    docker:
+      - image: cimg/base:2022.09
+
+jobs:
+  test:
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.24
+          docker_layer_caching: true
+      - run:
+          name: Install Docker client
+          command: |
+            set -x
+      - run:
+          name: Build Docker image
+          command: docker build -t anaks/react-test -f ./client/Dockerfile.dev ./client
+      - run:
+          name: Run tests
+          command: docker run -e CI=true anaks/react-test npm run test
+  deploy:
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.24
+          docker_layer_caching: true
+      - run:
+          name: Install Docker client
+          command: |
+            set -x
+      - run:
+          name: Build Docker image
+          command: |
+            docker build -t anaks/multi-client ./client
+            docker build -t anaks/multi-nginx ./nginx
+            docker build -t anaks/multi-server ./server
+            docker build -t anaks/multi-worker ./worker
+      - run: # Install the AWS CLI if it is not already included in the docker image
+          name: Install awscli
+          command: sudo apt-get update && sudo apt-get install -y awscli
+      - run: # Deploy to S3 using the sync command
+          name: Deploy to S3
+          command: aws s3 sync /home/circleci/project s3://elasticbeanstalk-ap-southeast-1-363493089880/frontend/
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - test
+      - deploy:
+          filters:
+            branches:
+              only: main
