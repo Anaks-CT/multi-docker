@@ -41,12 +41,9 @@ jobs:
             docker build -t anaks/multi-server ./server
             docker build -t anaks/multi-worker ./worker
       - run:
-          name: Log in to Docker Hub
-          command: echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_ID}" --password-stdin
-
-      - run:
           name: Push Docker images to Docker Hub
           command: |
+            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_ID}" --password-stdin
             docker push anaks/multi-client
             docker push anaks/multi-nginx
             docker push anaks/multi-server
