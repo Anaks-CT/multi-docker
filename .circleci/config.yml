@@ -69,6 +69,7 @@ workflows:
           environment-name: Multi-docker-env
           requires:
             - prodbuild
+          label: sample
           filters:
             branches:
               only: main
