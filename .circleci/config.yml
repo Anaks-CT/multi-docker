@@ -70,3 +70,8 @@ workflows:
           filters:
             branches:
               only: main
+          steps:
+            - run:
+                name: Deploy to AWS Elastic Beanstalk
+                command: |
+                  eb deploy Multi-docker-env 
