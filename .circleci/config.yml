@@ -70,9 +70,3 @@ workflows:
           filters:
             branches:
               only: main
-          app-name: multi-docker
-          env-name: Multi-docker-env
-          region: ap-southeast-1
-          version-label: sample
-          bucket-name: elasticbeanstalk-ap-southeast-1-363493089880
-          bucket-key: multi-docker
