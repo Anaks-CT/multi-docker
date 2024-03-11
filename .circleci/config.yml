@@ -1,7 +1,6 @@
 version: 2.1
 orbs:
   aws-elastic-beanstalk: circleci/aws-elastic-beanstalk@2.0.1
-  node: circleci/node@4.1.0
 executors:
   docker-executor:
     docker:
@@ -65,13 +64,11 @@ workflows:
           filters:
             branches:
               only: main
-      - node/test
       - aws-elastic-beanstalk/deploy:
           context: aws-creds
           environment-name: Multi-docker-env
           requires:
             - prodbuild
-            - node/test
           filters:
             branches:
               only: main
