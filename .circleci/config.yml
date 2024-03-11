@@ -62,8 +62,8 @@ jobs:
             aws configure set aws_access_key_id ${AWS_ACCESS_KEY}
             aws configure set aws_secret_access_key ${AWS_SECRET_KEY}
             aws configure set elasticbeanstalk_bucket_name elasticbeanstalk-ap-southeast-1-363493089880
-            aws configure set elasticbeanstalk_bucket_path docker-multi
-            aws s3 cp . s3://elasticbeanstalk-ap-southeast-1-363493089880/docker-multi --recursive --exclude "*" --include "*.zip"
+            aws configure set elasticbeanstalk_bucket_path multi-docker
+            aws s3 cp . s3://elasticbeanstalk-ap-southeast-1-363493089880/multi-docker --recursive --exclude "*" --include "*.zip"
             aws elasticbeanstalk create-application-version --application-name multi-docker --version-label multi-docker-version-1 --source-bundle S3Bucket=elasticbeanstalk-ap-southeast-1-923445559289,S3Key=docker-multi/multi-docker-version-1.zip --region ap-southeast-1
             aws elasticbeanstalk update-environment --application-name multi-docker --environment-name Multi-docker-env --version-label multi-docker-version-1 --region ap-southeast-1
 
