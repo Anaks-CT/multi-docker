@@ -3,9 +3,6 @@ executors:
   docker-executor:
     docker:
       - image: cimg/base:2022.09
-  aws-executor:
-    docker:
-      - image: cibuilds/aws:latest
 
 jobs:
   test:
@@ -53,9 +50,9 @@ jobs:
             docker push anaksct/multi-nginx
             docker push anaksct/multi-server
             docker push anaksct/multi-worker
-  deploy:
-    executor: aws-executor
-    steps:
+      - run: # Install the AWS CLI if it is not already included in the docker image
+          name: Install awscli
+          command: sudo apt-get update && sudo apt-get install -y awscli
       - run:
           name: Deploy to Elastic Beanstalk
           command: |
