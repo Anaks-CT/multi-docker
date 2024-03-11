@@ -3,6 +3,9 @@ executors:
   docker-executor:
     docker:
       - image: cimg/base:2022.09
+  aws-executor:
+    docker:
+      - image: cibuilds/aws:latest
 
 jobs:
   test:
@@ -22,7 +25,7 @@ jobs:
       - run:
           name: Run tests
           command: docker run -e CI=true anaks/react-test npm run test
-  deploy:
+  prodbuild:
     executor: docker-executor
     steps:
       - checkout
@@ -50,14 +53,35 @@ jobs:
             docker push anaksct/multi-nginx
             docker push anaksct/multi-server
             docker push anaksct/multi-worker
+  deploy:
+    executor: aws-executor
+    steps:
+      - run:
+          name: Deploy to Elastic Beanstalk
+          command: |
+            aws configure set region ap-southeast-1
+            aws configure set elasticbeanstalk_app=multi-docker
+            aws configure set elasticbeanstalk_env=Multi-docker-env 
+            aws configure set aws_access_key_id ${AWS_ACCESS_KEY}
+            aws configure set aws_secret_access_key ${AWS_SECRET_KEY}
+            aws configure set elasticbeanstalk_bucket_name elasticbeanstalk-ap-southeast-1-363493089880
+            aws configure set elasticbeanstalk_bucket_path docker-multi
+            aws s3 cp . s3://elasticbeanstalk-ap-southeast-1-363493089880/docker-multi --recursive --exclude "*" --include "*.zip"
+            aws elasticbeanstalk create-application-version --application-name multi-docker --version-label multi-docker-version-1 --source-bundle S3Bucket=elasticbeanstalk-ap-southeast-1-923445559289,S3Key=docker-multi/multi-docker-version-1.zip --region ap-southeast-1
+            aws elasticbeanstalk update-environment --application-name multi-docker --environment-name Multi-docker-env --version-label multi-docker-version-1 --region ap-southeast-1
+
+
 workflows:
   version: 2
   build:
     jobs:
       - test
-      - deploy:
+      - prodbuild:
           requires:
             - test
           filters:
             branches:
               only: main
+      - deploy:
+          requires:
+            - prodbuild
