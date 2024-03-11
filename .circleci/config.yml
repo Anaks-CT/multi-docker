@@ -52,7 +52,7 @@ jobs:
             docker push anaksct/multi-worker
       - run: # Install the AWS CLI if it is not already included in the docker image
           name: Install awscli
-          command: sudo apt-get update && sudo apt-get install -y awscli
+          command: apk add --no-cache py-pip && pip install awscli
       - run:
           name: Deploy to Elastic Beanstalk
           command: |
