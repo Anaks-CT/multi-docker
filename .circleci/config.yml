@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  aws-elastic-beanstalk: circleci/aws-elastic-beanstalk@1.0.0
 executors:
   docker-executor:
     docker:
@@ -50,23 +52,6 @@ jobs:
             docker push anaksct/multi-nginx
             docker push anaksct/multi-server
             docker push anaksct/multi-worker
-      - run: # Install the AWS CLI if it is not already included in the docker image
-          name: Install awscli
-          command: apk add --no-cache py-pip && pip install awscli
-      - run:
-          name: Deploy to Elastic Beanstalk
-          command: |
-            aws configure set region ap-southeast-1
-            aws configure set elasticbeanstalk_app=multi-docker
-            aws configure set elasticbeanstalk_env=Multi-docker-env 
-            aws configure set aws_access_key_id ${AWS_ACCESS_KEY}
-            aws configure set aws_secret_access_key ${AWS_SECRET_KEY}
-            aws configure set elasticbeanstalk_bucket_name elasticbeanstalk-ap-southeast-1-363493089880
-            aws configure set elasticbeanstalk_bucket_path multi-docker
-            aws s3 cp . s3://elasticbeanstalk-ap-southeast-1-363493089880/multi-docker --recursive --exclude "*" --include "*.zip"
-            aws elasticbeanstalk create-application-version --application-name multi-docker --version-label multi-docker-version-1 --source-bundle S3Bucket=elasticbeanstalk-ap-southeast-1-923445559289,S3Key=docker-multi/multi-docker-version-1.zip --region ap-southeast-1
-            aws elasticbeanstalk update-environment --application-name multi-docker --environment-name Multi-docker-env --version-label multi-docker-version-1 --region ap-southeast-1
-
 
 workflows:
   version: 2
@@ -79,3 +64,15 @@ workflows:
           filters:
             branches:
               only: main
+      - aws-elastic-beanstalk/deploy:
+          requires:
+            - prodbuild
+          filters:
+            branches:
+              only: main
+          app-name: multi-docker
+          env-name: Multi-docker-env
+          region: ap-southeast-1
+          version-label: sample
+          bucket-name: elasticbeanstalk-ap-southeast-1-363493089880
+          bucket-key: multi-docker
